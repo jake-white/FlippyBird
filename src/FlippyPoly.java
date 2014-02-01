@@ -1,4 +1,5 @@
-package flappyBird;
+
+
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -11,7 +12,7 @@ public class FlippyPoly {
 	public static void update() {
 		birdPanel.player = new Rectangle();
 		Point pPoint = new Point(100, birdPanel.player_Y);
-		Dimension pDim = new Dimension(20, 20);
+		Dimension pDim = new Dimension(17, 12);
 		birdPanel.player.setFrame(pPoint, pDim);
 		for(int i = 0; i < 4; ++i)
 		{

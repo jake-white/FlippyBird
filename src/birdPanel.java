@@ -1,21 +1,25 @@
-package flappyBird;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Polygon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Random;
 import java.util.Scanner;
 
+import javax.imageio.ImageIO;
+import javax.naming.directory.SearchResult;
 import javax.swing.*;
 
 public class birdPanel extends JPanel implements KeyListener {
@@ -32,12 +36,13 @@ public class birdPanel extends JPanel implements KeyListener {
 	public static boolean dead;
 	public static boolean[] counted = new boolean[2];
 	public static PrintWriter filesaver;
+	public static BufferedImage bird;
 	Scanner filereader;
 
 	public void init() {
 		System.out.println("started");
 		try {
-			filereader = new Scanner(new File("highscores.txt"));
+			filereader = new Scanner(new File("resources/highscores.txt"));
 			highscore = filereader.nextInt();
 			filereader.close();
 			System.out.println(highscore);
@@ -58,14 +63,20 @@ public class birdPanel extends JPanel implements KeyListener {
 	}
 
 	public void paintComponent(Graphics g) {
+		try {
+			bird = ImageIO.read(birdPanel.class.getResourceAsStream("resources/flappy_bird.png"));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		Graphics2D g2d = (Graphics2D) g;
 		FlippyPoly.update();
+		g.setColor(Color.BLACK);
+		g.fillRect(0, 340, 300, 340);
 		for (int i = 0; i < 4; ++i) {
-			if (player.intersects(pipe[i]) || player.getMinY() > 400)
+			if (player.intersects(pipe[i]) || player.getMaxY() > 340)
 				dead = true;
 		}
-		g.setColor(Color.RED);
-		g2d.fill(player);
 		g.setColor(Color.GREEN);
 		for (int i = 0; i < 2; ++i) {
 			if (player.getMinX() > pipe[i].getMinX() && !counted[i]) {
@@ -86,20 +97,21 @@ public class birdPanel extends JPanel implements KeyListener {
 		g2d.setFont(score_font);
 		g2d.drawString("" + score, 130, 100);
 		if (dead) {
-			if(score > highscore)
-			{
+			if (score > highscore) {
 				try {
-					filesaver = new PrintWriter("highscores.txt");
+					filesaver = new PrintWriter(new File("resources/highscores.txt"));
 				} catch (FileNotFoundException e) {
 				}
-				System.out.println("HIGHSCORE REACHED, " + score + " > " + highscore);
+				System.out.println("HIGHSCORE REACHED, " + score + " > "
+						+ highscore);
 				highscore = score;
-			filesaver.print(highscore);
-			filesaver.close();
+				filesaver.print(highscore);
+				filesaver.close();
 			}
 			g2d.setFont(g.getFont().deriveFont(15.0F));
 			g2d.drawString("Press enter to restart", 80, 120);
 		}
+		g.drawImage(bird, 100, player_Y, null);
 	}
 
 	public void reset_pos(int i) {
@@ -123,8 +135,9 @@ public class birdPanel extends JPanel implements KeyListener {
 	public class advanceTimer implements ActionListener {
 
 		public void actionPerformed(ActionEvent arg0) {
-			if (!dead) {
 				guiFrame.frame.repaint();
+				if(!dead)
+				{
 				for (int x = 0; x <= 1; ++x) {
 					camerapos[x] -= 3;
 					camerapos[x + 2] -= 3;
